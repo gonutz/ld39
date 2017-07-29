@@ -1,0 +1,3 @@
+old guy: 50%
+nurse: 50%
+tv: 70%

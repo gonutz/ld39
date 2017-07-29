@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	windowW, windowH = 1600, 600
+	windowW, windowH = 1200, 600
 	acceleration     = 0.3
 	decelration      = 0.05
 	maxSpeed         = 2.5
@@ -19,7 +19,9 @@ const (
 	blinkOverlay     = "blink.png"
 	shutMouthOverlay = "shut_mouth.png"
 	doorShut         = "closed_door.png"
-	nurseX, nurseY   = 800, 120
+	nurseX, nurseY   = 500, 80
+	tv               = "tv.png"
+	tvX, tvY         = 550, 190
 )
 
 var (
@@ -70,8 +72,9 @@ func main() {
 	var blinkTimer int
 	var mouthShutTimer int
 	nurse := nurseFrames
-	var nurseTalking bool = true
+	var nurseTalking bool
 	nurseTimer := 0
+	nurseAnimationStart := 120
 
 	check(draw.RunWindow("Running, out of Power", windowW, windowH, func(window draw.Window) {
 		if window.WasKeyPressed(draw.KeyEscape) {
@@ -108,6 +111,13 @@ func main() {
 		if mouthShutTimer < 0 {
 			mouthShutTimer = 0
 		}
+		nurseAnimationStart--
+		if nurseAnimationStart < 0 {
+			nurseAnimationStart = 0
+		}
+		if nurseAnimationStart == 1 {
+			nurseTalking = true
+		}
 
 		// render scene
 
@@ -139,6 +149,7 @@ func main() {
 		if blinkTimer <= 0 {
 			window.DrawImageFile(blinkOverlay, int(x+0.5), 200)
 		}
+		window.DrawImageFile(tv, tvX, tvY)
 	}))
 }
 
