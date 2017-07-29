@@ -18,6 +18,8 @@ const (
 	walkFrameDelay   = 5.0
 	blinkOverlay     = "blink.png"
 	shutMouthOverlay = "shut_mouth.png"
+	doorShut         = "closed_door.png"
+	nurseX, nurseY   = 800, 120
 )
 
 var (
@@ -26,6 +28,34 @@ var (
 		"old_guy2.png",
 		"old_guy1.png",
 		"old_guy3.png",
+	}
+	nurseFrames = []string{
+		"nurse3.png",
+		"nurse3.png",
+		"nurse3.png",
+		"nurse3.png",
+		"nurse3.png",
+		"nurse1.png",
+		"nurse3.png",
+		"nurse2.png",
+		"nurse1.png",
+		"nurse2.png",
+		"nurse1.png",
+		"nurse3.png",
+		"nurse2.png",
+		"nurse3.png",
+		"nurse1.png",
+		"nurse2.png",
+		"nurse1.png",
+		"nurse3.png",
+		"nurse2.png",
+		"nurse3.png",
+		"nurse1.png",
+		"nurse3.png",
+		"nurse3.png",
+		"nurse3.png",
+		"nurse3.png",
+		"nurse3.png",
 	}
 )
 
@@ -39,6 +69,9 @@ func main() {
 	nextFrame := walkFrameDelay
 	var blinkTimer int
 	var mouthShutTimer int
+	nurse := nurseFrames
+	var nurseTalking bool = true
+	nurseTimer := 0
 
 	check(draw.RunWindow("Running, out of Power", windowW, windowH, func(window draw.Window) {
 		if window.WasKeyPressed(draw.KeyEscape) {
@@ -71,12 +104,31 @@ func main() {
 		if blinkTimer < -3 {
 			blinkTimer = 30 + rand.Intn(90)
 		}
-		window.FillRect(0, 0, windowW, windowH, draw.RGB(0.9, 0.9, 0.9))
-		window.DrawImageFile(walkFrames[walkFrame], int(x+0.5), 200)
 		mouthShutTimer--
 		if mouthShutTimer < 0 {
 			mouthShutTimer = 0
 		}
+
+		// render scene
+
+		// clear background
+		window.FillRect(0, 0, windowW, windowH, draw.RGB(0.9, 0.9, 0.9))
+		// draw nurse
+		if nurseTalking {
+			window.DrawImageFile(nurse[0], nurseX, nurseY)
+			nurseTimer--
+			if nurseTimer <= 0 {
+				nurseTimer = 10
+				nurse = nurse[1:]
+				if len(nurse) == 0 {
+					nurseTalking = false
+				}
+			}
+		} else {
+			window.DrawImageFile(doorShut, nurseX, nurseY)
+		}
+		// draw main guy
+		window.DrawImageFile(walkFrames[walkFrame], int(x+0.5), 200)
 		if speed < 1 {
 			if mouthShutTimer == 0 {
 				window.DrawImageFile(shutMouthOverlay, int(x+0.5), 200)
