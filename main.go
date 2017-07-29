@@ -19,11 +19,13 @@ const (
 	blinkOverlay           = "blink.png"
 	shutMouthOverlay       = "shut_mouth.png"
 	doorShut               = "closed_door.png"
-	nurseX, nurseY         = 500, windowH - backTilesH - 309
+	nurseX, nurseY         = 400, windowH - backTilesH - 309
 	tv                     = "tv.png"
-	tvX, tvY               = 550, 190
+	tvX, tvY               = 850, 230
 	backTiles              = "back_tiles.png"
 	backTilesW, backTilesH = 143, 218
+	table                  = "table.png"
+	tableX, tableY         = 670, 375
 )
 
 var (
@@ -77,6 +79,7 @@ func main() {
 	var nurseTalking bool
 	nurseTimer := 0
 	nurseAnimationStart := 120
+	cameraX := 0
 
 	check(draw.RunWindow("Running, out of Power", windowW, windowH, func(window draw.Window) {
 		if window.WasKeyPressed(draw.KeyEscape) {
@@ -120,18 +123,22 @@ func main() {
 		if nurseAnimationStart == 1 {
 			nurseTalking = true
 		}
+		cameraX = int(x+0.5) - windowW/4
+		if cameraX < 0 {
+			cameraX = 0
+		}
 
 		// render scene
 
 		// clear background
 		window.FillRect(0, 0, windowW, windowH, draw.RGB(0.9, 0.9, 0.9))
 		// draw floor
-		for i := 0; i < 10; i++ {
-			window.DrawImageFile(backTiles, i*backTilesW, windowH-backTilesH)
+		for i := 0; i < 20; i++ {
+			window.DrawImageFile(backTiles, i*backTilesW-cameraX, windowH-backTilesH)
 		}
 		// draw nurse
 		if nurseTalking {
-			window.DrawImageFile(nurse[0], nurseX, nurseY)
+			window.DrawImageFile(nurse[0], nurseX-cameraX, nurseY)
 			nurseTimer--
 			if nurseTimer <= 0 {
 				nurseTimer = 10
@@ -141,21 +148,23 @@ func main() {
 				}
 			}
 		} else {
-			window.DrawImageFile(doorShut, nurseX, nurseY)
+			window.DrawImageFile(doorShut, nurseX-cameraX, nurseY)
 		}
 		// draw main guy
-		window.DrawImageFile(walkFrames[walkFrame], int(x+0.5), 200)
+		window.DrawImageFile(walkFrames[walkFrame], int(x+0.5)-cameraX, 200)
 		if speed < 1 {
 			if mouthShutTimer == 0 {
-				window.DrawImageFile(shutMouthOverlay, int(x+0.5), 200)
+				window.DrawImageFile(shutMouthOverlay, int(x+0.5)-cameraX, 200)
 			}
 		} else {
 			mouthShutTimer = 10
 		}
 		if blinkTimer <= 0 {
-			window.DrawImageFile(blinkOverlay, int(x+0.5), 200)
+			window.DrawImageFile(blinkOverlay, int(x+0.5)-cameraX, 200)
 		}
-		window.DrawImageFile(tv, tvX, tvY)
+		// draw TV set
+		window.DrawImageFile(table, tableX-cameraX, tableY)
+		window.DrawImageFile(tv, tvX-cameraX, tvY)
 	}))
 }
 
