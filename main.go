@@ -11,17 +11,19 @@ import (
 )
 
 const (
-	windowW, windowH = 1200, 600
-	acceleration     = 0.3
-	decelration      = 0.05
-	maxSpeed         = 2.5
-	walkFrameDelay   = 5.0
-	blinkOverlay     = "blink.png"
-	shutMouthOverlay = "shut_mouth.png"
-	doorShut         = "closed_door.png"
-	nurseX, nurseY   = 500, 80
-	tv               = "tv.png"
-	tvX, tvY         = 550, 190
+	windowW, windowH       = 1200, 600
+	acceleration           = maxSpeed //0.3
+	decelration            = 0.05
+	maxSpeed               = 2.5
+	walkFrameDelay         = 5.0
+	blinkOverlay           = "blink.png"
+	shutMouthOverlay       = "shut_mouth.png"
+	doorShut               = "closed_door.png"
+	nurseX, nurseY         = 500, windowH - backTilesH - 309
+	tv                     = "tv.png"
+	tvX, tvY               = 550, 190
+	backTiles              = "back_tiles.png"
+	backTilesW, backTilesH = 143, 218
 )
 
 var (
@@ -123,6 +125,10 @@ func main() {
 
 		// clear background
 		window.FillRect(0, 0, windowW, windowH, draw.RGB(0.9, 0.9, 0.9))
+		// draw floor
+		for i := 0; i < 10; i++ {
+			window.DrawImageFile(backTiles, i*backTilesW, windowH-backTilesH)
+		}
 		// draw nurse
 		if nurseTalking {
 			window.DrawImageFile(nurse[0], nurseX, nurseY)
