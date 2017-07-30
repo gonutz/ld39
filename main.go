@@ -19,20 +19,25 @@ const (
 	blinkOverlay           = "blink.png"
 	shutMouthOverlay       = "shut_mouth.png"
 	doorShut               = "closed_door.png"
-	nurseX, nurseY         = 600, windowH - backTilesH - 309
+	nurseX, nurseY         = 900, windowH - backTilesH - 309
 	tv                     = "tv.png"
-	tvX, tvY               = 1050, 230
+	tvX, tvY               = 1550, 230
 	backTiles              = "back_tiles.png"
 	backTilesW, backTilesH = 143, 218
 	table                  = "table.png"
-	tableX, tableY         = 870, 375
-	goalX                  = 735.0
+	tableX, tableY         = 1370, 375
+	goalX                  = 1235.0
 	armchair               = "armchair.png"
 	armchairX, armchairY   = 0, 315
 	couch                  = "couch.png"
-	couchX, couchY         = 160, 245
+	couchX, couchY         = 200, 245
 	couchBack              = "couch_back.png"
-	couchBackX, couchBackY = 140, 395
+	couchBackX, couchBackY = 190, 395
+	sitting                = "old_guy_sitting.png"
+	sittingX, sittingY     = -3, 195
+	sceneW                 = 1800
+	painting               = "painting1.png"
+	paintingX, paintingY   = 200, 70
 )
 
 var (
@@ -85,7 +90,7 @@ func main() {
 	nurse := nurseFrames
 	var nurseTalking bool
 	nurseTimer := 0
-	nurseAnimationStart := 120
+	nurseAnimationStart := 2
 	cameraX := 0
 
 	check(draw.RunWindow("Running, out of Power", windowW, windowH, func(window draw.Window) {
@@ -138,11 +143,17 @@ func main() {
 		if cameraX < 0 {
 			cameraX = 0
 		}
+		maxCamX := sceneW - windowW
+		if cameraX > maxCamX {
+			cameraX = maxCamX
+		}
 
 		// render scene
 
 		// clear background
 		window.FillRect(0, 0, windowW, windowH, draw.RGB(0.9, 0.9, 0.9))
+		// draw nice things on the wall
+		window.DrawImageFile(painting, paintingX-cameraX, paintingY)
 		// draw floor
 		for i := 0; i < 20; i++ {
 			window.DrawImageFile(backTiles, i*backTilesW-cameraX, windowH-backTilesH)
@@ -165,16 +176,20 @@ func main() {
 		window.DrawImageFile(couch, couchX-cameraX, couchY)
 		window.DrawImageFile(armchair, armchairX-cameraX, armchairY)
 		// draw main guy
-		window.DrawImageFile(walkFrames[walkFrame], int(x+0.5)-cameraX, 200)
-		if speed < 1 {
-			if mouthShutTimer == 0 {
-				window.DrawImageFile(shutMouthOverlay, int(x+0.5)-cameraX, 200)
+		if !nurseTalking {
+			window.DrawImageFile(walkFrames[walkFrame], int(x+0.5)-cameraX, 200)
+			if speed < 1 {
+				if mouthShutTimer == 0 {
+					window.DrawImageFile(shutMouthOverlay, int(x+0.5)-cameraX, 200)
+				}
+			} else {
+				mouthShutTimer = 10
+			}
+			if blinkTimer <= 0 {
+				window.DrawImageFile(blinkOverlay, int(x+0.5)-cameraX, 200)
 			}
 		} else {
-			mouthShutTimer = 10
-		}
-		if blinkTimer <= 0 {
-			window.DrawImageFile(blinkOverlay, int(x+0.5)-cameraX, 200)
+			window.DrawImageFile(sitting, sittingX-cameraX, sittingY)
 		}
 		// draw couch in the foreground
 		window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
