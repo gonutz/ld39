@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gonutz/prototype/draw"
+	"github.com/gonutz/w32"
 )
 
 type gameState int
@@ -48,7 +49,7 @@ const (
 	background             = "outside.png"
 	startBlend             = 1.1
 	dBlend                 = -0.005
-	endBlend               = -2
+	endBlend               = -1.6
 )
 
 var (
@@ -105,8 +106,13 @@ func main() {
 	nurseAnimationStart := 2
 	cameraX := 0
 	var blend float32 = startBlend
+	mouseDisabled := false
 
 	check(draw.RunWindow("Running, out of Power", windowW, windowH, func(window draw.Window) {
+		if !mouseDisabled {
+			w32.SetCursor(0)
+			mouseDisabled = true
+		}
 		if window.WasKeyPressed(draw.KeyEscape) {
 			window.Close()
 		}
