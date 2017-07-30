@@ -46,6 +46,7 @@ const (
 	couchBack              = "couch_back.png"
 	couchBackX, couchBackY = 190, 395
 	sitting                = "old_guy_sitting.png"
+	sittingBlinkOverlay    = "old_guy_sitting_blink.png"
 	sittingX, sittingY     = -3, 195
 	sceneW                 = 1800
 	painting               = "painting1.png"
@@ -56,9 +57,11 @@ const (
 	startBlend             = 1.1
 	dBlendSlow             = -0.005
 	dBlendFast             = 3 * dBlendSlow
-	endBlend               = -1.6
+	endBlend               = -1.3
 	bird1                  = "bird1.wav"
 	bird2                  = "bird2.wav"
+	bird3                  = "bird3.wav"
+	bird4                  = "bird4.wav"
 )
 
 var (
@@ -180,24 +183,24 @@ func main() {
 		if cameraX > maxCamX {
 			cameraX = maxCamX
 		}
-		if state == waitingForNurse {
-			if stateTimer > 100 {
-				state = nurseTalks
-			}
+		if state == waitingForNurse && stateTimer > 150 {
+			state = nurseTalks
+			stateTimer = 0
 		}
 		stateTimer++
 
 		// render scene
 
 		if state == outsideFadingIn {
-			if stateTimer == 60 {
-				window.PlaySoundFile(bird2)
-			}
-			if stateTimer == 90 {
+			switch stateTimer {
+			case 310:
 				window.PlaySoundFile(bird1)
-			}
-			if stateTimer == 200 {
+			case 100, 200:
 				window.PlaySoundFile(bird2)
+			case 290, 440:
+				window.PlaySoundFile(bird3)
+			case 150, 360:
+				window.PlaySoundFile(bird4)
 			}
 			a := blend
 			if a < 0 {
@@ -235,6 +238,9 @@ func main() {
 			// draw armchair and couches
 			window.DrawImageFile(couch, couchX-cameraX, couchY)
 			window.DrawImageFile(sitting, sittingX-cameraX, sittingY)
+			if blinkTimer <= 0 {
+				window.DrawImageFile(sittingBlinkOverlay, sittingX-cameraX, sittingY)
+			}
 			window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
 			// draw TV set
 			window.DrawImageFile(table, tableX-cameraX, tableY)
@@ -244,6 +250,7 @@ func main() {
 			blend += dBlendFast
 			if blend < 0 {
 				state = waitingForNurse
+				stateTimer = 0
 				blend = 0
 			}
 		} else if state == waitingForNurse {
@@ -260,6 +267,9 @@ func main() {
 			// draw armchair and couches
 			window.DrawImageFile(couch, couchX-cameraX, couchY)
 			window.DrawImageFile(sitting, sittingX-cameraX, sittingY)
+			if blinkTimer <= 0 {
+				window.DrawImageFile(sittingBlinkOverlay, sittingX-cameraX, sittingY)
+			}
 			window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
 			// draw TV set
 			window.DrawImageFile(table, tableX-cameraX, tableY)
@@ -288,20 +298,9 @@ func main() {
 			window.DrawImageFile(couch, couchX-cameraX, couchY)
 			window.DrawImageFile(armchair, armchairX-cameraX, armchairY)
 			// draw main guy
-			if !nurseTalking {
-				window.DrawImageFile(walkFrames[walkFrame], int(x+0.5)-cameraX, 200)
-				if speed < 1 {
-					if mouthShutTimer == 0 {
-						window.DrawImageFile(shutMouthOverlay, int(x+0.5)-cameraX, 200)
-					}
-				} else {
-					mouthShutTimer = 10
-				}
-				if blinkTimer <= 0 {
-					window.DrawImageFile(blinkOverlay, int(x+0.5)-cameraX, 200)
-				}
-			} else {
-				window.DrawImageFile(sitting, sittingX-cameraX, sittingY)
+			window.DrawImageFile(sitting, sittingX-cameraX, sittingY)
+			if blinkTimer <= 0 {
+				window.DrawImageFile(sittingBlinkOverlay, sittingX-cameraX, sittingY)
 			}
 			// draw couch in the foreground
 			window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
