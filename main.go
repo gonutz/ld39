@@ -26,6 +26,8 @@ const (
 	backTilesW, backTilesH = 143, 218
 	table                  = "table.png"
 	tableX, tableY         = 670, 375
+	armchair               = "armchair.png"
+	armchairX, armchairY   = 0, 315
 )
 
 var (
@@ -68,7 +70,7 @@ var (
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	var x float64
+	var x float64 = 130
 	var speed float64
 	var nextUpLeft bool
 	walkFrame := 0
@@ -150,6 +152,8 @@ func main() {
 		} else {
 			window.DrawImageFile(doorShut, nurseX-cameraX, nurseY)
 		}
+		// draw where the old people sit
+		window.DrawImageFile(armchair, armchairX-cameraX, armchairY)
 		// draw main guy
 		window.DrawImageFile(walkFrames[walkFrame], int(x+0.5)-cameraX, 200)
 		if speed < 1 {
