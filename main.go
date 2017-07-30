@@ -15,6 +15,9 @@ type gameState int
 
 const (
 	outsideFadingIn gameState = iota
+	outsideFadingOut
+	insideFadingIn
+
 	runningRace
 )
 
@@ -46,6 +49,8 @@ const (
 	sceneW                 = 1800
 	painting               = "painting1.png"
 	paintingX, paintingY   = 200, 70
+	painting2              = "painting2.png"
+	painting2X, painting2Y = 650, 110
 	background             = "outside.png"
 	startBlend             = 1.1
 	dBlend                 = -0.005
@@ -92,7 +97,7 @@ var (
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	var state gameState
+	var state gameState = insideFadingIn
 	x := 130.0
 	var speed float64
 	var nextUpLeft bool
@@ -188,6 +193,7 @@ func main() {
 			window.FillRect(0, 0, windowW, windowH, draw.RGB(0.9, 0.9, 0.9))
 			// draw nice things on the wall
 			window.DrawImageFile(painting, paintingX-cameraX, paintingY)
+			window.DrawImageFile(painting2, painting2X-cameraX, painting2Y)
 			// draw floor
 			for i := 0; i < 20; i++ {
 				window.DrawImageFile(backTiles, i*backTilesW-cameraX, windowH-backTilesH)
