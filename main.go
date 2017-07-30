@@ -10,6 +10,13 @@ import (
 	"github.com/gonutz/prototype/draw"
 )
 
+type gameState int
+
+const (
+	outsideFadingIn gameState = iota
+	runningRace
+)
+
 const (
 	windowW, windowH       = 1200, 600
 	acceleration           = maxSpeed //0.3
@@ -38,6 +45,10 @@ const (
 	sceneW                 = 1800
 	painting               = "painting1.png"
 	paintingX, paintingY   = 200, 70
+	background             = "outside.png"
+	startBlend             = 1.1
+	dBlend                 = -0.005
+	endBlend               = -2
 )
 
 var (
@@ -80,6 +91,7 @@ var (
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
+	var state gameState
 	x := 130.0
 	var speed float64
 	var nextUpLeft bool
@@ -92,6 +104,7 @@ func main() {
 	nurseTimer := 0
 	nurseAnimationStart := 2
 	cameraX := 0
+	var blend float32 = startBlend
 
 	check(draw.RunWindow("Running, out of Power", windowW, windowH, func(window draw.Window) {
 		if window.WasKeyPressed(draw.KeyEscape) {
@@ -150,52 +163,68 @@ func main() {
 
 		// render scene
 
-		// clear background
-		window.FillRect(0, 0, windowW, windowH, draw.RGB(0.9, 0.9, 0.9))
-		// draw nice things on the wall
-		window.DrawImageFile(painting, paintingX-cameraX, paintingY)
-		// draw floor
-		for i := 0; i < 20; i++ {
-			window.DrawImageFile(backTiles, i*backTilesW-cameraX, windowH-backTilesH)
-		}
-		// draw nurse
-		if nurseTalking {
-			window.DrawImageFile(nurse[0], nurseX-cameraX, nurseY)
-			nurseTimer--
-			if nurseTimer <= 0 {
-				nurseTimer = 10
-				nurse = nurse[1:]
-				if len(nurse) == 0 {
-					nurseTalking = false
-				}
+		if state == outsideFadingIn {
+			window.DrawImageFile(background, 0, 0)
+			a := blend
+			if a < 0 {
+				a = 0
+			}
+			if a > 1 {
+				a = 1
+			}
+			window.FillRect(0, 0, windowW, windowH, draw.RGBA(0, 0, 0, a))
+			blend += dBlend
+			if blend < endBlend {
+				state = runningRace
 			}
 		} else {
-			window.DrawImageFile(doorShut, nurseX-cameraX, nurseY)
-		}
-		// draw armchair and couch in the background
-		window.DrawImageFile(couch, couchX-cameraX, couchY)
-		window.DrawImageFile(armchair, armchairX-cameraX, armchairY)
-		// draw main guy
-		if !nurseTalking {
-			window.DrawImageFile(walkFrames[walkFrame], int(x+0.5)-cameraX, 200)
-			if speed < 1 {
-				if mouthShutTimer == 0 {
-					window.DrawImageFile(shutMouthOverlay, int(x+0.5)-cameraX, 200)
+			// clear background
+			window.FillRect(0, 0, windowW, windowH, draw.RGB(0.9, 0.9, 0.9))
+			// draw nice things on the wall
+			window.DrawImageFile(painting, paintingX-cameraX, paintingY)
+			// draw floor
+			for i := 0; i < 20; i++ {
+				window.DrawImageFile(backTiles, i*backTilesW-cameraX, windowH-backTilesH)
+			}
+			// draw nurse
+			if nurseTalking {
+				window.DrawImageFile(nurse[0], nurseX-cameraX, nurseY)
+				nurseTimer--
+				if nurseTimer <= 0 {
+					nurseTimer = 10
+					nurse = nurse[1:]
+					if len(nurse) == 0 {
+						nurseTalking = false
+					}
 				}
 			} else {
-				mouthShutTimer = 10
+				window.DrawImageFile(doorShut, nurseX-cameraX, nurseY)
 			}
-			if blinkTimer <= 0 {
-				window.DrawImageFile(blinkOverlay, int(x+0.5)-cameraX, 200)
+			// draw armchair and couch in the background
+			window.DrawImageFile(couch, couchX-cameraX, couchY)
+			window.DrawImageFile(armchair, armchairX-cameraX, armchairY)
+			// draw main guy
+			if !nurseTalking {
+				window.DrawImageFile(walkFrames[walkFrame], int(x+0.5)-cameraX, 200)
+				if speed < 1 {
+					if mouthShutTimer == 0 {
+						window.DrawImageFile(shutMouthOverlay, int(x+0.5)-cameraX, 200)
+					}
+				} else {
+					mouthShutTimer = 10
+				}
+				if blinkTimer <= 0 {
+					window.DrawImageFile(blinkOverlay, int(x+0.5)-cameraX, 200)
+				}
+			} else {
+				window.DrawImageFile(sitting, sittingX-cameraX, sittingY)
 			}
-		} else {
-			window.DrawImageFile(sitting, sittingX-cameraX, sittingY)
+			// draw couch in the foreground
+			window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
+			// draw TV set
+			window.DrawImageFile(table, tableX-cameraX, tableY)
+			window.DrawImageFile(tv, tvX-cameraX, tvY)
 		}
-		// draw couch in the foreground
-		window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
-		// draw TV set
-		window.DrawImageFile(table, tableX-cameraX, tableY)
-		window.DrawImageFile(tv, tvX-cameraX, tvY)
 	}))
 }
 
