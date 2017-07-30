@@ -19,15 +19,20 @@ const (
 	blinkOverlay           = "blink.png"
 	shutMouthOverlay       = "shut_mouth.png"
 	doorShut               = "closed_door.png"
-	nurseX, nurseY         = 400, windowH - backTilesH - 309
+	nurseX, nurseY         = 600, windowH - backTilesH - 309
 	tv                     = "tv.png"
-	tvX, tvY               = 850, 230
+	tvX, tvY               = 1050, 230
 	backTiles              = "back_tiles.png"
 	backTilesW, backTilesH = 143, 218
 	table                  = "table.png"
-	tableX, tableY         = 670, 375
+	tableX, tableY         = 870, 375
+	goalX                  = 735.0
 	armchair               = "armchair.png"
 	armchairX, armchairY   = 0, 315
+	couch                  = "couch.png"
+	couchX, couchY         = 160, 245
+	couchBack              = "couch_back.png"
+	couchBackX, couchBackY = 140, 395
 )
 
 var (
@@ -70,7 +75,7 @@ var (
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	var x float64 = 130
+	x := 130.0
 	var speed float64
 	var nextUpLeft bool
 	walkFrame := 0
@@ -102,6 +107,10 @@ func main() {
 			speed = 0
 		}
 		x += speed
+		if x > goalX {
+			x = goalX
+			speed = 0
+		}
 		nextFrame -= speed
 		if nextFrame <= 0 {
 			nextFrame = walkFrameDelay
@@ -152,7 +161,8 @@ func main() {
 		} else {
 			window.DrawImageFile(doorShut, nurseX-cameraX, nurseY)
 		}
-		// draw where the old people sit
+		// draw armchair and couch in the background
+		window.DrawImageFile(couch, couchX-cameraX, couchY)
 		window.DrawImageFile(armchair, armchairX-cameraX, armchairY)
 		// draw main guy
 		window.DrawImageFile(walkFrames[walkFrame], int(x+0.5)-cameraX, 200)
@@ -166,6 +176,8 @@ func main() {
 		if blinkTimer <= 0 {
 			window.DrawImageFile(blinkOverlay, int(x+0.5)-cameraX, 200)
 		}
+		// draw couch in the foreground
+		window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
 		// draw TV set
 		window.DrawImageFile(table, tableX-cameraX, tableY)
 		window.DrawImageFile(tv, tvX-cameraX, tvY)
