@@ -18,59 +18,76 @@ const (
 	insideFadingIn
 	waitingForNurse
 	nurseTalks
+	getReadyForRace
 	runningRace
 )
 
 const (
-	windowW, windowH       = 1200, 600
-	acceleration           = 0.25 //maxSpeed //0.25
-	decelration            = 0.05
-	maxSpeed               = 2.5
-	walkFrameDelay         = 5.0
-	blinkOverlay           = "blink.png"
-	shutMouthOverlay       = "shut_mouth.png"
-	doorShut               = "closed_door.png"
-	nurseX, nurseY         = 900, windowH - backTilesH - 309
-	tv                     = "tv.png"
-	tvX, tvY               = 1550, 230
-	backTiles              = "back_tiles.png"
-	backTilesW, backTilesH = 143, 218
-	table                  = "table.png"
-	tableX, tableY         = 1370, 375
-	goalX                  = 1235.0
-	armchair               = "armchair.png"
-	armchairX, armchairY   = 0, 315
-	couch                  = "couch.png"
-	couchX, couchY         = 200, 245
-	couchBack              = "couch_back.png"
-	couchBackX, couchBackY = 190, 395
-	sitting                = "old_guy_sitting.png"
-	sittingBlinkOverlay    = "old_guy_sitting_blink.png"
-	sittingX, sittingY     = -3, 195
-	sceneW                 = 1800
-	painting               = "painting1.png"
-	paintingX, paintingY   = 700, 70
-	painting2              = "painting2.png"
-	painting2X, painting2Y = 1500, 50
-	background             = "outside.png"
-	startBlend             = 1.1
-	dBlendSlow             = -0.005
-	dBlendFast             = 3 * dBlendSlow
-	endBlend               = -1.3
-	bird1                  = "bird1.wav"
-	bird2                  = "bird2.wav"
-	bird3                  = "bird3.wav"
-	bird4                  = "bird4.wav"
-	birdLeftUp             = "bird_left_up.png"
-	birdLeftDown           = "bird_left_down.png"
-	birdRightUp            = "bird_right_up.png"
-	birdRightDown          = "bird_right_down.png"
-	nurseSpeech            = "nurse.wav"
-	woman                  = "old_broad.png"
-	man                    = "other_dude.png"
-	squeak                 = "squeak.wav"
-	dSqueak                = 74
-	hitTable               = "hit_table.wav"
+	windowW, windowH           = 1200, 600
+	acceleration               = 0.25
+	decelration                = 0.05
+	maxSpeed                   = 2.4
+	walkFrameDelay             = 5.0
+	blinkOverlay               = "blink.png"
+	shutMouthOverlay           = "shut_mouth.png"
+	doorShut                   = "closed_door.png"
+	nurseX, nurseY             = 900, windowH - backTilesH - 309
+	tv                         = "tv.png"
+	tvX, tvY                   = 1550, 230
+	backTiles                  = "back_tiles.png"
+	backTilesW, backTilesH     = 143, 218
+	table                      = "table.png"
+	tableEmpty                 = "table_empty.png"
+	tableX, tableY             = 1370, 375
+	goalX                      = 1235.0
+	armchair                   = "armchair.png"
+	armchairX, armchairY       = 0, 315
+	couch                      = "couch.png"
+	couchX, couchY             = 200, 245
+	sleepyWoman                = "sleeping_woman.png"
+	sleepyWomanX, sleepyWomanY = 200, 245 - 110
+	couchBack                  = "couch_back.png"
+	couchBackX, couchBackY     = 190, 395
+	manSitting                 = "other_dude_sitting.png"
+	manSittingX, manSittingY   = 190, 395 - 60
+	sitting                    = "old_guy_sitting.png"
+	sittingBlinkOverlay        = "old_guy_sitting_blink.png"
+	sittingX, sittingY         = -3, 195
+	sceneW                     = 1800
+	painting                   = "painting1.png"
+	paintingX, paintingY       = 700, 70
+	painting2                  = "painting2.png"
+	painting2X, painting2Y     = 1500, 50
+	background                 = "outside.png"
+	startBlend                 = 1.1
+	dBlendSlow                 = -0.005
+	dBlendFast                 = 3 * dBlendSlow
+	endBlend                   = -1.3
+	bird1                      = "bird1.wav"
+	bird2                      = "bird2.wav"
+	bird3                      = "bird3.wav"
+	bird4                      = "bird4.wav"
+	birdLeftUp                 = "bird_left_up.png"
+	birdLeftDown               = "bird_left_down.png"
+	birdRightUp                = "bird_right_up.png"
+	birdRightDown              = "bird_right_down.png"
+	nurseSpeech                = "nurse.wav"
+	woman                      = "old_broad.png"
+	man                        = "other_dude.png"
+	squeak                     = "squeak.wav"
+	dSqueak                    = 74
+	hitTable                   = "hit_table.wav"
+	arrowLeft, arrowRight      = "instruction_left.png", "instruction_right.png"
+	arrowX, arrowY             = windowW/2 - 72/2, 0
+	arrowToggleTime            = 20
+	manAcceleration            = 0.003
+	maxManSpeed                = 2
+	manGoalX                   = 1255.0
+	mansChoice                 = "matlock.wav"
+	womanAcceleration          = 0.004
+	maxWomanSpeed              = 1.55
+	womanGoalX                 = 1335.0
+	womansChoice               = "grays_anatomy.wav"
 )
 
 var (
@@ -80,7 +97,22 @@ var (
 		"old_guy1.png",
 		"old_guy3.png",
 	}
-	nurseFrames = []string{
+	manWalkFrames = []string{
+		"other_dude1.png",
+		"other_dude2.png",
+		"other_dude1.png",
+		"other_dude3.png",
+	}
+	manWinning      = "other_dude_winning.png"
+	manTalkOverlay  = "other_dude_mouth_talks.png"
+	womanWalkFrames = []string{
+		"woman1.png",
+		"woman2.png",
+		"woman1.png",
+		"woman3.png",
+	}
+	womanTalkOverlay = "old_broad_talk_mouth.png"
+	nurseFrames      = []string{
 		"nurse3.png",
 		"nurse3.png",
 		"nurse3.png",
@@ -116,18 +148,25 @@ var (
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	var state gameState = runningRace //waitingForNurse
+	var state gameState = getReadyForRace //= waitingForNurse
 	x := 130.0
+	manX, manY := 550.0, 250
+	manSpeed := 0.0
+	var playerWon, manWon, womanWon bool
+	womanX, womanY := 550.0, 150
+	womanSpeed := 0.0
 	nextSqueak := int(x + 1)
-	var goalReached bool
 	var speed float64
 	var nextUpLeft bool
 	walkFrame := 0
 	nextFrame := walkFrameDelay
+	manWalkFrame := 0
+	manNextFrame := walkFrameDelay
+	womanWalkFrame := 0
+	womanNextFrame := walkFrameDelay
 	var blinkTimer int
 	var mouthShutTimer int
 	nurse := nurseFrames
-	//var nurseTalking bool
 	nurseTimer := 0
 	nurseAnimationStart := 2
 	cameraX := 0
@@ -144,6 +183,9 @@ func main() {
 		bird{x: 850, y: 350, left: true, up: true},
 	}
 	birdToggleTimer := 0
+	arrowTimer := 0
+	var showArrowLeft bool
+	var playerKnowsHowToPlay bool
 
 	check(draw.RunWindow("Running, out of Power", windowW, windowH, func(window draw.Window) {
 		if window.WasKeyPressed(draw.KeyEscape) {
@@ -173,10 +215,10 @@ func main() {
 			if x > goalX {
 				x = goalX
 				speed = 0
-				if !goalReached {
+				if !playerWon {
 					window.PlaySoundFile(hitTable)
 				}
-				goalReached = true
+				playerWon = true
 			}
 			nextFrame -= speed
 			if nextFrame <= 0 {
@@ -190,6 +232,66 @@ func main() {
 			if mouthShutTimer < 0 {
 				mouthShutTimer = 0
 			}
+			// move man
+			manSpeed += manAcceleration
+			if manSpeed > maxManSpeed {
+				manSpeed = maxManSpeed
+			}
+			manX += manSpeed
+			if manX > manGoalX {
+				manX = manGoalX
+				manSpeed = 0
+				manWon = true
+			}
+			manNextFrame -= manSpeed
+			if manNextFrame <= 0 {
+				manNextFrame = walkFrameDelay
+				manWalkFrame = (manWalkFrame + 1) % len(manWalkFrames)
+			}
+			// move woman
+			womanSpeed += womanAcceleration
+			if womanSpeed > maxWomanSpeed {
+				womanSpeed = maxWomanSpeed
+			}
+			womanX += womanSpeed
+			if womanX > womanGoalX {
+				womanX = womanGoalX
+				womanSpeed = 0
+				womanWon = true
+			}
+			womanNextFrame -= womanSpeed
+			if womanNextFrame <= 0 {
+				womanNextFrame = walkFrameDelay
+				womanWalkFrame = (womanWalkFrame + 1) % len(womanWalkFrames)
+			}
+
+			if x > 500 {
+				playerKnowsHowToPlay = true
+			}
+
+			if window.WasKeyPressed(draw.KeySpace) {
+				state = getReadyForRace
+				x = 130.0
+				manX, manY = 550.0, 250
+				manSpeed = 0.0
+				playerWon, manWon, womanWon = false, false, false
+				womanX, womanY = 550.0, 150
+				womanSpeed = 0.0
+				nextSqueak = int(x + 1)
+				speed = 0
+				nextUpLeft = false
+				walkFrame = 0
+				nextFrame = walkFrameDelay
+				manWalkFrame = 0
+				manNextFrame = walkFrameDelay
+				womanWalkFrame = 0
+				womanNextFrame = walkFrameDelay
+				mouthShutTimer = 0
+				cameraX = 0
+				stateTimer = 0
+				showArrowLeft = false
+
+			}
 		}
 		blinkTimer--
 		if blinkTimer < -3 {
@@ -199,9 +301,6 @@ func main() {
 		if nurseAnimationStart < 0 {
 			nurseAnimationStart = 0
 		}
-		//if nurseAnimationStart == 1 {
-		//	nurseTalking = true
-		//}
 		// fix camera on character
 		cameraX = int(x+0.5) - windowW/4
 		if cameraX < 0 {
@@ -259,9 +358,6 @@ func main() {
 			for i := 0; i < 20; i++ {
 				window.DrawImageFile(backTiles, i*backTilesW-cameraX, windowH-backTilesH)
 			}
-			// TODO remove:
-			window.DrawImageFile(woman, 600-cameraX, 150)
-			window.DrawImageFile(man, 700-cameraX, 250)
 		}
 
 		if state == outsideFadingIn {
@@ -324,12 +420,12 @@ func main() {
 			renderInside()
 			window.DrawImageFile(doorShut, nurseX-cameraX, nurseY)
 			// draw armchair and couches
-			window.DrawImageFile(couch, couchX-cameraX, couchY)
+			window.DrawImageFile(sleepyWoman, sleepyWomanX-cameraX, sleepyWomanY)
 			window.DrawImageFile(sitting, sittingX-cameraX, sittingY)
 			if blinkTimer <= 0 {
 				window.DrawImageFile(sittingBlinkOverlay, sittingX-cameraX, sittingY)
 			}
-			window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
+			window.DrawImageFile(manSitting, manSittingX-cameraX, manSittingY)
 			// draw TV set
 			window.DrawImageFile(table, tableX-cameraX, tableY)
 			window.DrawImageFile(tv, tvX-cameraX, tvY)
@@ -342,11 +438,12 @@ func main() {
 				nurseTimer = 10
 				nurse = nurse[1:]
 				if len(nurse) == 0 {
-					state = runningRace // TODO
+					state = getReadyForRace
+					stateTimer = 0
 				}
 			}
 			// draw armchair and couch in the background
-			window.DrawImageFile(couch, couchX-cameraX, couchY)
+			window.DrawImageFile(sleepyWoman, sleepyWomanX-cameraX, sleepyWomanY)
 			window.DrawImageFile(armchair, armchairX-cameraX, armchairY)
 			// draw main guy
 			window.DrawImageFile(sitting, sittingX-cameraX, sittingY)
@@ -354,16 +451,21 @@ func main() {
 				window.DrawImageFile(sittingBlinkOverlay, sittingX-cameraX, sittingY)
 			}
 			// draw couch in the foreground
-			window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
+			window.DrawImageFile(manSitting, manSittingX-cameraX, manSittingY)
 			// draw TV set
 			window.DrawImageFile(table, tableX-cameraX, tableY)
 			window.DrawImageFile(tv, tvX-cameraX, tvY)
-		} else if state == runningRace {
+		} else if state == getReadyForRace {
 			renderInside()
 			window.DrawImageFile(doorShut, nurseX-cameraX, nurseY)
 			// draw armchair and couch in the background
 			window.DrawImageFile(couch, couchX-cameraX, couchY)
 			window.DrawImageFile(armchair, armchairX-cameraX, armchairY)
+			// draw woman in the background
+			window.DrawImageFile(womanWalkFrames[0], int(womanX+0.5)-cameraX, womanY)
+			if 90 <= stateTimer && stateTimer <= 165 && (stateTimer/10)%2 == 1 {
+				window.DrawImageFile(womanTalkOverlay, int(womanX+0.5)-cameraX, womanY)
+			}
 			// draw main guy
 			window.DrawImageFile(walkFrames[walkFrame], int(x+0.5)-cameraX, 200)
 			if speed < 1 {
@@ -376,10 +478,75 @@ func main() {
 			if blinkTimer <= 0 {
 				window.DrawImageFile(blinkOverlay, int(x+0.5)-cameraX, 200)
 			}
+			// draw guy in the front
+			window.DrawImageFile(manWalkFrames[0], int(manX+0.5)-cameraX, manY)
+			if 30 <= stateTimer && stateTimer <= 90 && (stateTimer/10)%2 == 0 {
+				window.DrawImageFile(manTalkOverlay, int(manX+0.5)-cameraX, manY)
+			}
 			// draw couch in the foreground
 			window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
 			// draw TV set
-			window.DrawImageFile(table, tableX-cameraX, tableY)
+			if manWon {
+				window.DrawImageFile(tableEmpty, tableX-cameraX, tableY)
+			} else {
+				window.DrawImageFile(table, tableX-cameraX, tableY)
+			}
+			window.DrawImageFile(tv, tvX-cameraX, tvY)
+			if stateTimer == 30 {
+				window.PlaySoundFile(mansChoice)
+			}
+			if stateTimer == 90 {
+				window.PlaySoundFile(womansChoice)
+			}
+			if stateTimer > 170 {
+				state = runningRace
+			}
+		} else if state == runningRace {
+			renderInside()
+			if !playerKnowsHowToPlay {
+				if showArrowLeft {
+					window.DrawImageFile(arrowLeft, arrowX, arrowY)
+				} else {
+					window.DrawImageFile(arrowRight, arrowX, arrowY)
+				}
+				arrowTimer--
+				if arrowTimer < 0 {
+					arrowTimer = arrowToggleTime
+					showArrowLeft = !showArrowLeft
+				}
+			}
+			window.DrawImageFile(doorShut, nurseX-cameraX, nurseY)
+			// draw armchair and couch in the background
+			window.DrawImageFile(couch, couchX-cameraX, couchY)
+			window.DrawImageFile(armchair, armchairX-cameraX, armchairY)
+			// draw woman in the background
+			window.DrawImageFile(womanWalkFrames[womanWalkFrame], int(womanX+0.5)-cameraX, womanY)
+			// draw main guy
+			window.DrawImageFile(walkFrames[walkFrame], int(x+0.5)-cameraX, 200)
+			if speed < 1 {
+				if mouthShutTimer == 0 {
+					window.DrawImageFile(shutMouthOverlay, int(x+0.5)-cameraX, 200)
+				}
+			} else {
+				mouthShutTimer = 10
+			}
+			if blinkTimer <= 0 {
+				window.DrawImageFile(blinkOverlay, int(x+0.5)-cameraX, 200)
+			}
+			// draw guy in the front
+			if manWon {
+				window.DrawImageFile(manWinning, int(manX+0.5)-cameraX, manY)
+			} else {
+				window.DrawImageFile(manWalkFrames[manWalkFrame], int(manX+0.5)-cameraX, manY)
+			}
+			// draw couch in the foreground
+			window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
+			// draw TV set
+			if manWon {
+				window.DrawImageFile(tableEmpty, tableX-cameraX, tableY)
+			} else {
+				window.DrawImageFile(table, tableX-cameraX, tableY)
+			}
 			window.DrawImageFile(tv, tvX-cameraX, tvY)
 		}
 	}))
