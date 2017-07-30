@@ -17,7 +17,8 @@ const (
 	outsideFadingIn gameState = iota
 	outsideFadingOut
 	insideFadingIn
-
+	waitingForNurse
+	nurseTalks
 	runningRace
 )
 
@@ -53,8 +54,11 @@ const (
 	painting2X, painting2Y = 1600, 50
 	background             = "outside.png"
 	startBlend             = 1.1
-	dBlend                 = -0.005
+	dBlendSlow             = -0.005
+	dBlendFast             = 3 * dBlendSlow
 	endBlend               = -1.6
+	bird1                  = "bird1.wav"
+	bird2                  = "bird2.wav"
 )
 
 var (
@@ -97,7 +101,7 @@ var (
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	var state gameState = insideFadingIn
+	var state gameState // = insideFadingIn
 	x := 130.0
 	var speed float64
 	var nextUpLeft bool
@@ -111,8 +115,9 @@ func main() {
 	nurseAnimationStart := 2
 	cameraX := 0
 	var blend float32 = startBlend
-	mouseDisabled := false
+	var stateTimer int
 
+	mouseDisabled := false
 	check(draw.RunWindow("Running, out of Power", windowW, windowH, func(window draw.Window) {
 		if !mouseDisabled {
 			w32.SetCursor(0)
@@ -121,40 +126,43 @@ func main() {
 		if window.WasKeyPressed(draw.KeyEscape) {
 			window.Close()
 		}
-		left := window.IsKeyDown(draw.KeyLeft)
-		right := window.IsKeyDown(draw.KeyRight)
-		if nextUpLeft && left && !right ||
-			!nextUpLeft && right && !left {
-			speed += acceleration
-			nextUpLeft = !nextUpLeft
-		}
-		if speed > maxSpeed {
-			speed = maxSpeed
-		}
-		speed -= decelration
-		if speed < 0 {
-			speed = 0
-		}
-		x += speed
-		if x > goalX {
-			x = goalX
-			speed = 0
-		}
-		nextFrame -= speed
-		if nextFrame <= 0 {
-			nextFrame = walkFrameDelay
-			walkFrame = (walkFrame + 1) % len(walkFrames)
-		}
-		if speed == 0 {
-			walkFrame = 0
+
+		if state == runningRace {
+			left := window.IsKeyDown(draw.KeyLeft)
+			right := window.IsKeyDown(draw.KeyRight)
+			if nextUpLeft && left && !right ||
+				!nextUpLeft && right && !left {
+				speed += acceleration
+				nextUpLeft = !nextUpLeft
+			}
+			if speed > maxSpeed {
+				speed = maxSpeed
+			}
+			speed -= decelration
+			if speed < 0 {
+				speed = 0
+			}
+			x += speed
+			if x > goalX {
+				x = goalX
+				speed = 0
+			}
+			nextFrame -= speed
+			if nextFrame <= 0 {
+				nextFrame = walkFrameDelay
+				walkFrame = (walkFrame + 1) % len(walkFrames)
+			}
+			if speed == 0 {
+				walkFrame = 0
+			}
+			mouthShutTimer--
+			if mouthShutTimer < 0 {
+				mouthShutTimer = 0
+			}
 		}
 		blinkTimer--
 		if blinkTimer < -3 {
 			blinkTimer = 30 + rand.Intn(90)
-		}
-		mouthShutTimer--
-		if mouthShutTimer < 0 {
-			mouthShutTimer = 0
 		}
 		nurseAnimationStart--
 		if nurseAnimationStart < 0 {
@@ -163,6 +171,7 @@ func main() {
 		if nurseAnimationStart == 1 {
 			nurseTalking = true
 		}
+		// fix camera on character
 		cameraX = int(x+0.5) - windowW/4
 		if cameraX < 0 {
 			cameraX = 0
@@ -171,11 +180,25 @@ func main() {
 		if cameraX > maxCamX {
 			cameraX = maxCamX
 		}
+		if state == waitingForNurse {
+			if stateTimer > 100 {
+				state = nurseTalks
+			}
+		}
+		stateTimer++
 
 		// render scene
 
 		if state == outsideFadingIn {
-			window.DrawImageFile(background, 0, 0)
+			if stateTimer == 60 {
+				window.PlaySoundFile(bird2)
+			}
+			if stateTimer == 90 {
+				window.PlaySoundFile(bird1)
+			}
+			if stateTimer == 200 {
+				window.PlaySoundFile(bird2)
+			}
 			a := blend
 			if a < 0 {
 				a = 0
@@ -183,12 +206,65 @@ func main() {
 			if a > 1 {
 				a = 1
 			}
+			window.DrawImageFile(background, 0, 0)
 			window.FillRect(0, 0, windowW, windowH, draw.RGBA(0, 0, 0, a))
-			blend += dBlend
+			blend += dBlendSlow
 			if blend < endBlend {
-				state = runningRace
+				state = outsideFadingOut
+				blend = 0
 			}
-		} else {
+		} else if state == outsideFadingOut {
+			window.DrawImageFile(background, 0, 0)
+			window.FillRect(0, 0, windowW, windowH, draw.RGBA(0, 0, 0, blend))
+			blend -= dBlendFast
+			if blend > 1 {
+				state = insideFadingIn
+				blend = 1
+			}
+		} else if state == insideFadingIn {
+			// clear background
+			window.FillRect(0, 0, windowW, windowH, draw.RGB(0.9, 0.9, 0.9))
+			// draw nice things on the wall
+			window.DrawImageFile(painting, paintingX-cameraX, paintingY)
+			window.DrawImageFile(painting2, painting2X-cameraX, painting2Y)
+			// draw floor
+			for i := 0; i < 20; i++ {
+				window.DrawImageFile(backTiles, i*backTilesW-cameraX, windowH-backTilesH)
+			}
+			window.DrawImageFile(doorShut, nurseX-cameraX, nurseY)
+			// draw armchair and couches
+			window.DrawImageFile(couch, couchX-cameraX, couchY)
+			window.DrawImageFile(sitting, sittingX-cameraX, sittingY)
+			window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
+			// draw TV set
+			window.DrawImageFile(table, tableX-cameraX, tableY)
+			window.DrawImageFile(tv, tvX-cameraX, tvY)
+			// fade in
+			window.FillRect(0, 0, windowW, windowH, draw.RGBA(0, 0, 0, blend))
+			blend += dBlendFast
+			if blend < 0 {
+				state = waitingForNurse
+				blend = 0
+			}
+		} else if state == waitingForNurse {
+			// clear background
+			window.FillRect(0, 0, windowW, windowH, draw.RGB(0.9, 0.9, 0.9))
+			// draw nice things on the wall
+			window.DrawImageFile(painting, paintingX-cameraX, paintingY)
+			window.DrawImageFile(painting2, painting2X-cameraX, painting2Y)
+			// draw floor
+			for i := 0; i < 20; i++ {
+				window.DrawImageFile(backTiles, i*backTilesW-cameraX, windowH-backTilesH)
+			}
+			window.DrawImageFile(doorShut, nurseX-cameraX, nurseY)
+			// draw armchair and couches
+			window.DrawImageFile(couch, couchX-cameraX, couchY)
+			window.DrawImageFile(sitting, sittingX-cameraX, sittingY)
+			window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
+			// draw TV set
+			window.DrawImageFile(table, tableX-cameraX, tableY)
+			window.DrawImageFile(tv, tvX-cameraX, tvY)
+		} else if state == nurseTalks {
 			// clear background
 			window.FillRect(0, 0, windowW, windowH, draw.RGB(0.9, 0.9, 0.9))
 			// draw nice things on the wall
@@ -199,19 +275,50 @@ func main() {
 				window.DrawImageFile(backTiles, i*backTilesW-cameraX, windowH-backTilesH)
 			}
 			// draw nurse
-			if nurseTalking {
-				window.DrawImageFile(nurse[0], nurseX-cameraX, nurseY)
-				nurseTimer--
-				if nurseTimer <= 0 {
-					nurseTimer = 10
-					nurse = nurse[1:]
-					if len(nurse) == 0 {
-						nurseTalking = false
+			window.DrawImageFile(nurse[0], nurseX-cameraX, nurseY)
+			nurseTimer--
+			if nurseTimer <= 0 {
+				nurseTimer = 10
+				nurse = nurse[1:]
+				if len(nurse) == 0 {
+					state = runningRace // TODO
+				}
+			}
+			// draw armchair and couch in the background
+			window.DrawImageFile(couch, couchX-cameraX, couchY)
+			window.DrawImageFile(armchair, armchairX-cameraX, armchairY)
+			// draw main guy
+			if !nurseTalking {
+				window.DrawImageFile(walkFrames[walkFrame], int(x+0.5)-cameraX, 200)
+				if speed < 1 {
+					if mouthShutTimer == 0 {
+						window.DrawImageFile(shutMouthOverlay, int(x+0.5)-cameraX, 200)
 					}
+				} else {
+					mouthShutTimer = 10
+				}
+				if blinkTimer <= 0 {
+					window.DrawImageFile(blinkOverlay, int(x+0.5)-cameraX, 200)
 				}
 			} else {
-				window.DrawImageFile(doorShut, nurseX-cameraX, nurseY)
+				window.DrawImageFile(sitting, sittingX-cameraX, sittingY)
 			}
+			// draw couch in the foreground
+			window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
+			// draw TV set
+			window.DrawImageFile(table, tableX-cameraX, tableY)
+			window.DrawImageFile(tv, tvX-cameraX, tvY)
+		} else if state == runningRace {
+			// clear background
+			window.FillRect(0, 0, windowW, windowH, draw.RGB(0.9, 0.9, 0.9))
+			// draw nice things on the wall
+			window.DrawImageFile(painting, paintingX-cameraX, paintingY)
+			window.DrawImageFile(painting2, painting2X-cameraX, painting2Y)
+			// draw floor
+			for i := 0; i < 20; i++ {
+				window.DrawImageFile(backTiles, i*backTilesW-cameraX, windowH-backTilesH)
+			}
+			window.DrawImageFile(doorShut, nurseX-cameraX, nurseY)
 			// draw armchair and couch in the background
 			window.DrawImageFile(couch, couchX-cameraX, couchY)
 			window.DrawImageFile(armchair, armchairX-cameraX, armchairY)
