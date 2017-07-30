@@ -23,7 +23,7 @@ const (
 
 const (
 	windowW, windowH       = 1200, 600
-	acceleration           = maxSpeed //0.3
+	acceleration           = maxSpeed //0.25
 	decelration            = 0.05
 	maxSpeed               = 2.5
 	walkFrameDelay         = 5.0
@@ -48,9 +48,9 @@ const (
 	sittingX, sittingY     = -3, 195
 	sceneW                 = 1800
 	painting               = "painting1.png"
-	paintingX, paintingY   = 200, 70
+	paintingX, paintingY   = 700, 70
 	painting2              = "painting2.png"
-	painting2X, painting2Y = 650, 110
+	painting2X, painting2Y = 1600, 50
 	background             = "outside.png"
 	startBlend             = 1.1
 	dBlend                 = -0.005
