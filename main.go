@@ -24,7 +24,7 @@ const (
 
 const (
 	windowW, windowH           = 1200, 600
-	acceleration               = 0.25
+	acceleration               = 0.3
 	decelration                = 0.05
 	maxSpeed                   = 2.2
 	walkFrameDelay             = 5.0
