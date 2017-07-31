@@ -218,7 +218,12 @@ func main() {
 	resetRace()
 	state = outsideFadingIn
 
+	iconWasSet := false
 	check(draw.RunWindow("Breathless Parks - Running, out of Power", windowW, windowH, func(window draw.Window) {
+		if !iconWasSet {
+			setIcon()
+			iconWasSet = false
+		}
 		if window.WasKeyPressed(draw.KeyEscape) {
 			window.Close()
 		}
