@@ -192,6 +192,7 @@ func main() {
 	var playerKnowsHowToPlay bool
 	musicTimer := 0
 	var musicStarted bool
+	var hitSoundPlayed bool
 
 	resetRace := func() {
 		state = getReadyForRace
@@ -214,6 +215,7 @@ func main() {
 		cameraX = 0
 		stateTimer = 0
 		showArrowLeft = false
+		hitSoundPlayed = false
 	}
 	resetRace()
 	state = outsideFadingIn
@@ -260,8 +262,9 @@ func main() {
 			if x > goalX {
 				x = goalX
 				speed = 0
-				if !playerWon {
+				if !hitSoundPlayed {
 					window.PlaySoundFile(hitTable)
+					hitSoundPlayed = true
 				}
 				if !manWon {
 					if !playerWon {
