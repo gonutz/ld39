@@ -26,7 +26,7 @@ const (
 	windowW, windowH           = 1200, 600
 	acceleration               = 0.25
 	decelration                = 0.05
-	maxSpeed                   = 2.4
+	maxSpeed                   = 2.1
 	walkFrameDelay             = 5.0
 	blinkOverlay               = "blink.png"
 	shutMouthOverlay           = "shut_mouth.png"
@@ -84,10 +84,12 @@ const (
 	maxManSpeed                = 2
 	manGoalX                   = 1255.0
 	mansChoice                 = "matlock.wav"
+	manWins                    = "other_guy_wins.wav"
 	womanAcceleration          = 0.004
 	maxWomanSpeed              = 1.55
 	womanGoalX                 = 1335.0
 	womansChoice               = "grays_anatomy.wav"
+	backMusic                  = "back_music.wav"
 )
 
 var (
@@ -152,8 +154,8 @@ func main() {
 	x := 130.0
 	manX, manY := 550.0, 250
 	manSpeed := 0.0
-	var playerWon, manWon, womanWon bool
-	womanX, womanY := 550.0, 150
+	var playerWon, manWon bool
+	womanX, womanY := 530.0, 150
 	womanSpeed := 0.0
 	nextSqueak := int(x + 1)
 	var speed float64
@@ -186,13 +188,48 @@ func main() {
 	arrowTimer := 0
 	var showArrowLeft bool
 	var playerKnowsHowToPlay bool
+	musicTimer := 0
+	var musicStarted bool
+
+	resetRace := func() {
+		state = getReadyForRace
+		x = 130.0
+		manX, manY = 550.0, 250
+		manSpeed = 0.0
+		playerWon, manWon = false, false
+		womanX, womanY = 530.0, 150
+		womanSpeed = 0.0
+		nextSqueak = int(x + 1)
+		speed = 0
+		nextUpLeft = false
+		walkFrame = 0
+		nextFrame = walkFrameDelay
+		manWalkFrame = 0
+		manNextFrame = walkFrameDelay
+		womanWalkFrame = 0
+		womanNextFrame = walkFrameDelay
+		mouthShutTimer = 0
+		cameraX = 0
+		stateTimer = 0
+		showArrowLeft = false
+	}
+	resetRace()
 
 	check(draw.RunWindow("Running, out of Power", windowW, windowH, func(window draw.Window) {
 		if window.WasKeyPressed(draw.KeyEscape) {
 			window.Close()
 		}
 
+		if musicStarted {
+			if musicTimer == 0 {
+				window.PlaySoundFile(backMusic)
+				musicTimer = 100
+			}
+			musicTimer--
+		}
+
 		if state == runningRace {
+			musicStarted = true
 			left := window.IsKeyDown(draw.KeyLeft)
 			right := window.IsKeyDown(draw.KeyRight)
 			if nextUpLeft && left && !right ||
@@ -241,7 +278,10 @@ func main() {
 			if manX > manGoalX {
 				manX = manGoalX
 				manSpeed = 0
-				manWon = true
+				if !manWon && !playerWon {
+					window.PlaySoundFile(manWins)
+					manWon = true
+				}
 			}
 			manNextFrame -= manSpeed
 			if manNextFrame <= 0 {
@@ -257,7 +297,6 @@ func main() {
 			if womanX > womanGoalX {
 				womanX = womanGoalX
 				womanSpeed = 0
-				womanWon = true
 			}
 			womanNextFrame -= womanSpeed
 			if womanNextFrame <= 0 {
@@ -270,27 +309,7 @@ func main() {
 			}
 
 			if window.WasKeyPressed(draw.KeySpace) {
-				state = getReadyForRace
-				x = 130.0
-				manX, manY = 550.0, 250
-				manSpeed = 0.0
-				playerWon, manWon, womanWon = false, false, false
-				womanX, womanY = 550.0, 150
-				womanSpeed = 0.0
-				nextSqueak = int(x + 1)
-				speed = 0
-				nextUpLeft = false
-				walkFrame = 0
-				nextFrame = walkFrameDelay
-				manWalkFrame = 0
-				manNextFrame = walkFrameDelay
-				womanWalkFrame = 0
-				womanNextFrame = walkFrameDelay
-				mouthShutTimer = 0
-				cameraX = 0
-				stateTimer = 0
-				showArrowLeft = false
-
+				resetRace()
 			}
 		}
 		blinkTimer--
@@ -399,12 +418,12 @@ func main() {
 			renderInside()
 			window.DrawImageFile(doorShut, nurseX-cameraX, nurseY)
 			// draw armchair and couches
-			window.DrawImageFile(couch, couchX-cameraX, couchY)
+			window.DrawImageFile(sleepyWoman, sleepyWomanX-cameraX, sleepyWomanY)
 			window.DrawImageFile(sitting, sittingX-cameraX, sittingY)
 			if blinkTimer <= 0 {
 				window.DrawImageFile(sittingBlinkOverlay, sittingX-cameraX, sittingY)
 			}
-			window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
+			window.DrawImageFile(manSitting, manSittingX-cameraX, manSittingY)
 			// draw TV set
 			window.DrawImageFile(table, tableX-cameraX, tableY)
 			window.DrawImageFile(tv, tvX-cameraX, tvY)
@@ -486,7 +505,7 @@ func main() {
 			// draw couch in the foreground
 			window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
 			// draw TV set
-			if manWon {
+			if manWon || playerWon {
 				window.DrawImageFile(tableEmpty, tableX-cameraX, tableY)
 			} else {
 				window.DrawImageFile(table, tableX-cameraX, tableY)
