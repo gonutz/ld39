@@ -26,7 +26,7 @@ const (
 	windowW, windowH           = 1200, 600
 	acceleration               = 0.25
 	decelration                = 0.05
-	maxSpeed                   = 2.1
+	maxSpeed                   = 2.2
 	walkFrameDelay             = 5.0
 	blinkOverlay               = "blink.png"
 	shutMouthOverlay           = "shut_mouth.png"
@@ -90,6 +90,7 @@ const (
 	womanGoalX                 = 1335.0
 	womansChoice               = "grays_anatomy.wav"
 	backMusic                  = "back_music.wav"
+	playerWinSound             = "win.wav"
 )
 
 var (
@@ -99,6 +100,7 @@ var (
 		"old_guy1.png",
 		"old_guy3.png",
 	}
+	winFrame      = "old_guy_win.png"
 	manWalkFrames = []string{
 		"other_dude1.png",
 		"other_dude2.png",
@@ -150,7 +152,7 @@ var (
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	var state gameState = getReadyForRace //= waitingForNurse
+	var state gameState
 	x := 130.0
 	manX, manY := 550.0, 250
 	manSpeed := 0.0
@@ -214,8 +216,9 @@ func main() {
 		showArrowLeft = false
 	}
 	resetRace()
+	state = outsideFadingIn
 
-	check(draw.RunWindow("Running, out of Power", windowW, windowH, func(window draw.Window) {
+	check(draw.RunWindow("Breathless Parks - Running, out of Power", windowW, windowH, func(window draw.Window) {
 		if window.WasKeyPressed(draw.KeyEscape) {
 			window.Close()
 		}
@@ -255,7 +258,12 @@ func main() {
 				if !playerWon {
 					window.PlaySoundFile(hitTable)
 				}
-				playerWon = true
+				if !manWon {
+					if !playerWon {
+						window.PlaySoundFile(playerWinSound)
+					}
+					playerWon = true
+				}
 			}
 			nextFrame -= speed
 			if nextFrame <= 0 {
@@ -278,6 +286,7 @@ func main() {
 			if manX > manGoalX {
 				manX = manGoalX
 				manSpeed = 0
+				manWalkFrame = 0
 				if !manWon && !playerWon {
 					window.PlaySoundFile(manWins)
 					manWon = true
@@ -297,6 +306,7 @@ func main() {
 			if womanX > womanGoalX {
 				womanX = womanGoalX
 				womanSpeed = 0
+				womanWalkFrame = 0
 			}
 			womanNextFrame -= womanSpeed
 			if womanNextFrame <= 0 {
@@ -522,17 +532,24 @@ func main() {
 			}
 		} else if state == runningRace {
 			renderInside()
+			if playerKnowsHowToPlay && manWon {
+				if showArrowLeft {
+					window.DrawImageFile("space_small.png", 520, 0)
+				} else {
+					window.DrawImageFile("space_big.png", 520, 0)
+				}
+			}
 			if !playerKnowsHowToPlay {
 				if showArrowLeft {
 					window.DrawImageFile(arrowLeft, arrowX, arrowY)
 				} else {
 					window.DrawImageFile(arrowRight, arrowX, arrowY)
 				}
-				arrowTimer--
-				if arrowTimer < 0 {
-					arrowTimer = arrowToggleTime
-					showArrowLeft = !showArrowLeft
-				}
+			}
+			arrowTimer--
+			if arrowTimer < 0 {
+				arrowTimer = arrowToggleTime
+				showArrowLeft = !showArrowLeft
 			}
 			window.DrawImageFile(doorShut, nurseX-cameraX, nurseY)
 			// draw armchair and couch in the background
@@ -541,13 +558,17 @@ func main() {
 			// draw woman in the background
 			window.DrawImageFile(womanWalkFrames[womanWalkFrame], int(womanX+0.5)-cameraX, womanY)
 			// draw main guy
-			window.DrawImageFile(walkFrames[walkFrame], int(x+0.5)-cameraX, 200)
-			if speed < 1 {
-				if mouthShutTimer == 0 {
-					window.DrawImageFile(shutMouthOverlay, int(x+0.5)-cameraX, 200)
-				}
+			if playerWon {
+				window.DrawImageFile(winFrame, int(x+0.5)-cameraX, 200)
 			} else {
-				mouthShutTimer = 10
+				window.DrawImageFile(walkFrames[walkFrame], int(x+0.5)-cameraX, 200)
+				if speed < 1 {
+					if mouthShutTimer == 0 {
+						window.DrawImageFile(shutMouthOverlay, int(x+0.5)-cameraX, 200)
+					}
+				} else {
+					mouthShutTimer = 10
+				}
 			}
 			if blinkTimer <= 0 {
 				window.DrawImageFile(blinkOverlay, int(x+0.5)-cameraX, 200)
@@ -561,7 +582,7 @@ func main() {
 			// draw couch in the foreground
 			window.DrawImageFile(couchBack, couchBackX-cameraX, couchBackY)
 			// draw TV set
-			if manWon {
+			if manWon || playerWon {
 				window.DrawImageFile(tableEmpty, tableX-cameraX, tableY)
 			} else {
 				window.DrawImageFile(table, tableX-cameraX, tableY)
