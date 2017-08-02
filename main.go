@@ -233,7 +233,7 @@ func main() {
 		if musicStarted {
 			if musicTimer == 0 {
 				window.PlaySoundFile(backMusic)
-				musicTimer = 100
+				musicTimer = 123
 			}
 			musicTimer--
 		}
@@ -472,7 +472,7 @@ func main() {
 			window.DrawImageFile(nurse[0], nurseX-cameraX, nurseY)
 			nurseTimer--
 			if nurseTimer <= 0 {
-				nurseTimer = 10
+				nurseTimer = 12
 				nurse = nurse[1:]
 				if len(nurse) == 0 {
 					state = getReadyForRace
@@ -500,7 +500,7 @@ func main() {
 			window.DrawImageFile(armchair, armchairX-cameraX, armchairY)
 			// draw woman in the background
 			window.DrawImageFile(womanWalkFrames[0], int(womanX+0.5)-cameraX, womanY)
-			if 90 <= stateTimer && stateTimer <= 165 && (stateTimer/10)%2 == 1 {
+			if 90 <= stateTimer && stateTimer <= 185 && (stateTimer/10)%2 == 1 {
 				window.DrawImageFile(womanTalkOverlay, int(womanX+0.5)-cameraX, womanY)
 			}
 			// draw main guy
@@ -535,7 +535,7 @@ func main() {
 			if stateTimer == 90 {
 				window.PlaySoundFile(womansChoice)
 			}
-			if stateTimer > 170 {
+			if stateTimer > 190 {
 				state = runningRace
 			}
 		} else if state == runningRace {
